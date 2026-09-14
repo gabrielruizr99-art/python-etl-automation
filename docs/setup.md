@@ -60,3 +60,8 @@ Una vez generados los archivos, puedes ejecutar el pipeline completo de manera i
 - **Carga (Load)**: Usa una **tabla temporal (`staging_sales`)** y el comando `COPY` para carga masiva y controlada de las filas. Finalmente, un `INSERT ... ON CONFLICT DO NOTHING` deposita las filas seguras en `warehouse.sales`. 
 - **Archivado Transaccional**: Mueve los archivos a `data/processed`, `data/rejected`, o `data/processed/duplicates` y aplica sufijos (`_YYYYMMDDHHMMSS_hash`) en caso de colisión. Si falla el movimiento, la BD hace rollback. Si falla el Commit tras el movimiento, el archivo es restituido.
 - **Idempotencia**: Garantiza total protección. Una segunda ejecución no afectará la base de datos de ninguna forma (0 archivos, 0 inserts).
+
+## Siguientes Pasos
+
+- Considere revisar `docs/operations.md` para programar la ejecución automática diaria mediante el wrapper `scripts/run_pipeline.ps1` usando Task Scheduler.
+- Consulte `scripts/pipeline_status.py` para visualizar el estado operativo del proyecto.

@@ -53,3 +53,23 @@ Los archivos descubiertos pasan por validaciones de esquema (encabezados) y vali
 .venv\Scripts\python.exe scripts\validate_files.py
 ```
 Las filas anómalas son segregadas sin interrumpir las demás. Toda la operación es **idempotente** (una segunda corrida ignorará los archivos ya validados previamente).
+
+## Ejecución del Pipeline (Modo Manual)
+
+Para arrancar el proceso completo de descubrimiento, validación y carga en PostgreSQL:
+```powershell
+.venv\Scripts\python.exe scripts\run_pipeline.py
+```
+*También puede ejecutar el wrapper en PowerShell (recomendado para producción):*
+```powershell
+.\scripts\run_pipeline.ps1
+```
+
+## Estado y Automatización
+
+Para consultar el estado operativo de la base de datos (ReadOnly):
+```powershell
+.venv\Scripts\python.exe scripts\pipeline_status.py
+```
+
+Para automatizar la ejecución usando el Programador de Tareas de Windows (Task Scheduler), consulte `docs/operations.md`.

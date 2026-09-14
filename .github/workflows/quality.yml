@@ -1,0 +1,135 @@
+name: ETL Quality Gates
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-ubuntu:
+    name: Code Quality and Tests (Ubuntu)
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: etl_user
+          POSTGRES_PASSWORD: ephemeral_ci_password_123
+          POSTGRES_DB: etl_automation
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: etl_automation
+      DB_USER: etl_user
+      DB_PASSWORD: ephemeral_ci_password_123
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-lock.txt
+        
+    - name: Wait for PostgreSQL
+      run: |
+        until pg_isready -h localhost -p 5432; do
+          echo "Waiting for postgres..."
+          sleep 2
+        done
+        
+    - name: Initialize Database
+      run: python scripts/setup_database.py
+      
+    - name: Check Code Quality with Ruff
+      run: ruff check .
+      
+    - name: Run Pytest
+      run: pytest -v
+      
+    # --- PRUEBAS DE IDEMPOTENCIA CI ---
+    - name: Generar Dataset Sintético
+      run: python scripts/generate_sales_data.py
+      
+    - name: Ejecución 1 - Pipeline (Carga Inicial)
+      run: python scripts/run_pipeline.py
+      
+    - name: Verificar Ejecución 1
+      run: |
+        COUNT=$(psql -h localhost -U etl_user -d etl_automation -t -c "SELECT count(*) FROM warehouse.sales" | xargs)
+        if [ "$COUNT" != "12001" ]; then
+          echo "Error: Esperado 12001, encontrado $COUNT"
+          exit 1
+        fi
+      env:
+        PGPASSWORD: ephemeral_ci_password_123
+        
+    - name: Ejecución 2 - Pipeline (Sin regenerar datos)
+      run: python scripts/run_pipeline.py
+      
+    - name: Verificar Ejecución 2
+      run: |
+        COUNT=$(psql -h localhost -U etl_user -d etl_automation -t -c "SELECT count(*) FROM warehouse.sales" | xargs)
+        if [ "$COUNT" != "12001" ]; then
+          echo "Error: Esperado 12001, encontrado $COUNT"
+          exit 1
+        fi
+      env:
+        PGPASSWORD: ephemeral_ci_password_123
+        
+    - name: Ejecución 3 - Pipeline (Regenerando CSVs)
+      run: |
+        python scripts/generate_sales_data.py
+        python scripts/run_pipeline.py
+        
+    - name: Verificar Ejecución 3 y Duplicados
+      run: |
+        COUNT=$(psql -h localhost -U etl_user -d etl_automation -t -c "SELECT count(*) FROM warehouse.sales" | xargs)
+        if [ "$COUNT" != "12001" ]; then
+          echo "Error: Esperado 12001, encontrado $COUNT"
+          exit 1
+        fi
+        DUPS=$(psql -h localhost -U etl_user -d etl_automation -t -c "SELECT count(*) FROM (SELECT sale_id FROM warehouse.sales GROUP BY sale_id HAVING count(*) > 1) d" | xargs)
+        if [ "$DUPS" != "0" ]; then
+          echo "Error: Hay $DUPS registros duplicados."
+          exit 1
+        fi
+      env:
+        PGPASSWORD: ephemeral_ci_password_123
+
+  powershell-windows:
+    name: PowerShell Scripts (Windows)
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-lock.txt
+        
+    - name: Run PowerShell Tests
+      run: pytest tests/test_powershell_scripts.py -v
