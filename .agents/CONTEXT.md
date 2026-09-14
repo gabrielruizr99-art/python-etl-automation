@@ -1,0 +1,21 @@
+- Python 3.11 o superior.
+- Código y nombres técnicos en inglés.
+- Documentación y explicaciones para el usuario en español.
+- Usar pathlib para rutas.
+- Usar type hints y funciones pequeñas.
+- Separar extracción, validación, transformación y carga.
+- Usar pandas para procesamiento tabular.
+- Usar psycopg 3 para PostgreSQL.
+- Usar variables de entorno para credenciales.
+- Nunca escribir contraseñas en código, prompts, commits o logs.
+- Nunca leer ni mostrar el contenido completo de .env.
+- Utilizar transacciones en las cargas PostgreSQL.
+- La carga debe ser idempotente.
+- Los registros inválidos deben conservarse en rejected, junto con el motivo.
+- Registrar inicio, final, duración, filas válidas, rechazadas y duplicadas.
+- Incluir pruebas con pytest.
+- No ejecutar DROP, TRUNCATE, DELETE masivo ni comandos destructivos sin autorización explícita.
+- No publicar en GitHub hasta recibir autorización.
+- Revisar git diff antes de cada commit.
+- No modificar cambios manuales del usuario sin autorización.
+- Realizar un solo cambio lógico por commit.

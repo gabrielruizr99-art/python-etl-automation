@@ -1,0 +1,17 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+logs/*.log
+data/incoming/*
+data/processed/*
+data/rejected/*
+
+# Excepciones para .gitkeep
+!.gitkeep
+!data/incoming/.gitkeep
+!data/processed/.gitkeep
+!data/rejected/.gitkeep
+!logs/.gitkeep
