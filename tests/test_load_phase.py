@@ -79,7 +79,8 @@ def test_rollback_on_move_failure(tmp_path, monkeypatch, repo, db_transaction):
     incoming_dir.mkdir()
     processed_dir.mkdir()
     
-    file_path = incoming_dir / "test.csv"
+    file_name = "test_load_rollback.csv"
+    file_path = incoming_dir / file_name
     headers = ["sale_id", "sale_date", "sale_time", "branch_id", "customer_id", "product_id", "seller_id", "sales_channel", "payment_method", "quantity", "unit_price", "discount_pct"]
     row = [str(uuid.uuid4()), "2026-04-01", "10:30:00", "BR-01", "C-0100", "P-01", "S-01", "Store", "Cash", "1", "10.0", "0.0"]
     with file_path.open("w", newline="") as f:
