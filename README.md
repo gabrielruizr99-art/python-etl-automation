@@ -13,6 +13,18 @@ Las empresas suelen recibir datos de ventas crudos en archivos CSV que contienen
 4. **Manejo de rechazos**: Los registros inválidos o duplicados se aíslan en la carpeta `data/rejected` junto a su motivo.
 5. **Histórico y Logs**: Los archivos procesados se mueven a un archivo histórico, y se genera un registro detallado de las ejecuciones.
 
+## Dataset Sintético
+Los datos utilizados son ficticios y son generados automáticamente para asegurar la reproducibilidad del proyecto mediante una semilla determinista.
+
+- **Volumen Generado:** Se producen datos de ventas correspondientes a abril de 2026. Hay 30 archivos diarios normales, conteniendo cada uno exactamente 400 filas. El total normal esperado es de 12,000 registros.
+- **Comando de generación:**
+  ```bash
+  .venv\Scripts\python.exe scripts\generate_sales_data.py
+  ```
+- **Casos contemplados:** Además del flujo válido (archivos diarios), el generador inyecta casos especiales (archivos repetidos, filas duplicadas o inválidas, esquemas rotos y archivos vacíos) para probar la resiliencia del ETL y asegurar el correcto manejo de errores.
+
+> **Aviso de Privacidad y Repositorio:** El directorio de operaciones principal (`data/incoming/`, `data/processed/`, etc.) está ignorado y no se publica en GitHub por seguridad y volumen. Solo se conservan en control de versiones algunas pequeñas muestras ilustrativas de <=25 filas ubicadas en `data/sample/`.
+
 ## Tecnologías
 - Python 3.11+
 - Pandas (Procesamiento tabular)
@@ -22,6 +34,4 @@ Las empresas suelen recibir datos de ventas crudos en archivos CSV que contienen
 - Ruff (Linter y formateador)
 
 ## Estado actual
-Configuración inicial completada. Estructura de carpetas, entorno virtual y reglas del proyecto establecidas.
-
-> **Aviso:** Los datos utilizados en este proyecto para demostración serán generados y completamente ficticios.
+Contrato de datos diseñado y generador de datos configurado.

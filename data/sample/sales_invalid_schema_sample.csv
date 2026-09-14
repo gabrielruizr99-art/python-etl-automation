@@ -1,0 +1,6 @@
+sale_id,sale_date,sale_time,branch_id,product_id,seller_id,sales_channel,payment_method,quantity,unit_price,discount_pct,unknown_column
+6e85e46b-c338-430b-8ff5-6c5bf1c6f2c8,2026-04-01,12:20:10,BR-05,P-0018,S-02,Web,Transfer,2,149.37,0.0,test
+aa692b85-809b-4953-8f1e-e615ada60c96,2026-04-01,13:23:45,BR-05,P-0026,S-14,Phone,Card,4,87.47,0.0,test
+cad85bb9-6f26-4fab-97ef-91c5d3218a9b,2026-04-01,08:20:50,BR-05,P-0055,S-18,Store,Transfer,5,163.77,0.0,test
+2b473dc6-8c14-4024-b733-6fcfc46659d1,2026-04-01,14:45:20,BR-06,P-0072,S-05,Phone,DigitalWallet,1,236.01,0.15,test
+680739fa-c6e6-4415-a4ad-15873be0e969,2026-04-01,11:29:13,BR-04,P-0056,S-11,Store,Card,4,154.24,0.0,test
