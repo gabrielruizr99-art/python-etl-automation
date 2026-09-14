@@ -2,6 +2,7 @@ import logging
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
+
 import psycopg
 
 from src.etl.discovery import discover_csv_files
@@ -22,7 +23,7 @@ class DiscoveryService:
     def __init__(self, repo: ETLRepository):
         self.repo = repo
 
-    def run_discovery(self, incoming_dir: Path, run_id: uuid.UUID = None) -> DiscoveryResult:
+    def run_discovery(self, incoming_dir: Path, run_id: uuid.UUID | None = None) -> DiscoveryResult:
         if run_id is None:
             run_id = self.repo.create_pipeline_run()
         logger.info(f"Started pipeline run {run_id} for discovery.")
@@ -55,7 +56,8 @@ class DiscoveryService:
                                 duplicate_paths.append((Path(file.file_path), file.file_hash))
                             else:
                                 logger.info(f"File {file.file_name} is already in pipeline (status: {res[0] if res else 'unknown'})")
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001
+                        # Evitamos interrumpir toda la corrida si falla la consulta del estado de un archivo
                         logger.error(f"Failed to check status for {file.file_name}: {e}")
                     
             self.repo.complete_pipeline_run(run_id, discovered_count, duplicate_count)

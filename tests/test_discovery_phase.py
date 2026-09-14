@@ -4,6 +4,7 @@ import uuid
 import psycopg
 import pytest
 
+from scripts.setup_database import main as setup_db_main
 from src.etl.config import get_settings
 from src.etl.discovery import discover_csv_files
 from src.etl.hashing import calculate_sha256
@@ -30,11 +31,11 @@ def test_calculate_sha256_modified(tmp_path, monkeypatch):
     def mock_stat(path, *args, **kwargs):
         nonlocal call_count
         st = original_stat(path, *args, **kwargs)
-        if str(path) == str(file_path):
+        if str(path).endswith(file_path.name):
             call_count += 1
             if call_count > 1:
                 class FakeStat:
-                    st_size = st.st_size + 1
+                    st_size = st.st_size + call_count
                     st_mtime = st.st_mtime
                 return FakeStat()
         return st
@@ -97,10 +98,18 @@ def test_repository_register_file_idempotency(repo):
     is_new_again = repo.register_file(run_id, file)
     assert is_new_again is False
 
-def test_warehouse_sales_count():
+def test_database_setup_preserves_existing_sales():
     settings = get_settings()
     db_info = settings.get_psycopg_connection_info()
+    
     with psycopg.connect(**db_info) as conn, conn.cursor() as cur:
         cur.execute("SELECT COUNT(*) FROM warehouse.sales")
-        count = cur.fetchone()[0]
-        assert count >= 0, "warehouse.sales count is valid"
+        initial_count = cur.fetchone()[0]
+        
+    setup_db_main()
+    
+    with psycopg.connect(**db_info) as conn, conn.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM warehouse.sales")
+        final_count = cur.fetchone()[0]
+        
+    assert initial_count == final_count, "setup_database.py modified existing records"

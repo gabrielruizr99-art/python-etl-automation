@@ -56,7 +56,6 @@ def db_transaction(monkeypatch, repo):
     def mock_connect(*args, **kwargs):
         return conn
         
-    original_commit = conn.commit
     original_close = conn.close
     
     def mock_commit():

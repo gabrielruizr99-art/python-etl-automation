@@ -37,7 +37,7 @@ class LoadService:
             return dest_dir / new_name
         return target_path
 
-    def run_load(self, incoming_dir: Path, processed_dir: Path, run_id: uuid.UUID = None) -> LoadResult:
+    def run_load(self, incoming_dir: Path, processed_dir: Path, run_id: uuid.UUID | None = None) -> LoadResult:
         if run_id is None:
             run_id = self.repo.create_pipeline_run()
             
@@ -68,7 +68,8 @@ class LoadService:
                     self.repo.update_file_status(file_id, "failed", "Hash mismatch before loading")
                     files_failed += 1
                     continue
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
+                # Capturamos fallo general (OS, IO, Hash) aislando el archivo y reportando fail
                 logger.error(f"Error calculating hash for {file_name}: {e}")
                 self.repo.update_file_status(file_id, "failed", "Error hashing file")
                 files_failed += 1
@@ -90,7 +91,8 @@ class LoadService:
                             file_seen_ids.add(sid)
                             transformed = transform_row(row, file_name, current_hash)
                             valid_rows.append(transformed)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
+                # Fallo imprevisto en lectura de CSV aisla el archivo
                 logger.error(f"Error reading/transforming file {file_name}: {e}")
                 self.repo.update_file_status(file_id, "failed", "Error processing file rows")
                 files_failed += 1
@@ -106,7 +108,7 @@ class LoadService:
                 
                 try:
                     shutil.move(str(file_path), str(target_path))
-                except Exception as e:
+                except OSError as e:
                     logger.error(f"Failed to move file {file_name} to {target_path}: {e}")
                     conn.rollback()
                     self.repo.update_file_status(file_id, "failed", "File move failed")
@@ -116,11 +118,11 @@ class LoadService:
                 
                 try:
                     conn.commit()
-                except Exception as e:
+                except psycopg.Error as e:
                     logger.error(f"Failed to commit transaction for {file_name}: {e}")
                     try:
                         shutil.move(str(target_path), str(file_path))
-                    except Exception as comp_e:
+                    except OSError as comp_e:
                         logger.critical(f"CRITICAL: Compensation failed for {file_name}. File is at {target_path} but DB is rolled back. Error: {comp_e}")
                     self.repo.update_file_status(file_id, "failed", "DB commit failed")
                     files_failed += 1
@@ -132,7 +134,7 @@ class LoadService:
                 files_processed += 1
                 rows_inserted += inserted_count
                 
-            except Exception as e:
+            except psycopg.Error as e:
                 if conn:
                     conn.rollback()
                     conn.close()

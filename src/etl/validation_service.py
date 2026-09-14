@@ -27,7 +27,7 @@ class ValidationService:
     def __init__(self, repo: ETLRepository):
         self.repo = repo
         
-    def run_validation(self, incoming_dir: Path, run_id: uuid.UUID = None) -> ValidationResult:
+    def run_validation(self, incoming_dir: Path, run_id: uuid.UUID | None = None) -> ValidationResult:
         if run_id is None:
             run_id = self.repo.create_pipeline_run()
         logger.info(f"Started validation run {run_id}")

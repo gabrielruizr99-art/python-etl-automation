@@ -139,7 +139,7 @@ class ETLRepository:
             logger.error("Failed to get validated files.")
             raise RuntimeError("Database error") from e
 
-    def update_file_status(self, file_id: uuid.UUID, status: str, error_message: str = None):
+    def update_file_status(self, file_id: uuid.UUID, status: str, error_message: str | None = None):
         """Actualiza el estado de un archivo en file_registry."""
         now = datetime.now(timezone.utc)
         query = """

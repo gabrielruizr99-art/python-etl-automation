@@ -1,18 +1,18 @@
 import logging
 import shutil
-import sys
 import time
 from pathlib import Path
 
 import psycopg
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
-sys.path.append(str(ROOT_DIR))
-
 from src.etl.discovery_service import DiscoveryService
 from src.etl.load_service import LoadService
 from src.etl.repositories import ETLRepository
 from src.etl.validation_service import ValidationService
+
+logger = logging.getLogger(__name__)
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 
 def setup_logging():
@@ -65,8 +65,8 @@ def main():
         target_path = _get_anticollision_path(duplicates_dir, path.name, f_hash)
         try:
             shutil.move(str(path), str(target_path))
-        except Exception as e:
-            logging.error(f"Error moving duplicate {path.name}: {e}")
+        except OSError as e:
+            logger.error(f"Error moving duplicate {path.name}: {e}")
             
     # 2. Validación
     validation_svc = ValidationService(repo)
@@ -88,10 +88,11 @@ def main():
                     target_path = _get_anticollision_path(rejected_dir, file_name, file_hash)
                     try:
                         shutil.move(str(src_path), str(target_path))
-                    except Exception as e:
-                        logging.error(f"Error moving rejected file {file_name}: {e}")
-    except Exception as e:
-        logging.error(f"Error moving rejected files: {e}")
+                    except OSError as e:
+                        logger.error(f"Error moving rejected file {file_name}: {e}")
+    except Exception as e:  # noqa: BLE001
+        # Fallback genérico para asegurar que la pipeline no crashea sin loguear el error de base de datos
+        logger.error(f"Error moving rejected files: {e}")
         
     duration = time.time() - start_time
     
