@@ -15,3 +15,7 @@ data/rejected/*
 !data/processed/.gitkeep
 !data/rejected/.gitkeep
 !logs/.gitkeep
+
+# Artefactos
+implementation_plan.md
+task.md

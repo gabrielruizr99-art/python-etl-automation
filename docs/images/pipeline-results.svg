@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%" style="background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.05"/>
+    </filter>
+  </defs>
+
+  <text x="400" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="#0f172a">ETL Pipeline Verified Results</text>
+  <text x="400" y="80" text-anchor="middle" font-size="14" fill="#64748b">Métricas comprobadas tras la ejecución del pipeline</text>
+
+  <!-- ROW 1 -->
+  <!-- Metric 1 -->
+  <rect x="80" y="120" width="200" height="100" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#shadow)" />
+  <rect x="80" y="120" width="200" height="6" fill="#3b82f6" rx="3" />
+  <text x="180" y="165" text-anchor="middle" font-size="32" font-weight="bold" fill="#0f172a">34</text>
+  <text x="180" y="195" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">Archivos Analizados</text>
+
+  <!-- Metric 2 -->
+  <rect x="300" y="120" width="200" height="100" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#shadow)" />
+  <rect x="300" y="120" width="200" height="6" fill="#10b981" rx="3" />
+  <text x="400" y="165" text-anchor="middle" font-size="32" font-weight="bold" fill="#0f172a">12,001</text>
+  <text x="400" y="195" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">Ventas Cargadas</text>
+
+  <!-- Metric 3 -->
+  <rect x="520" y="120" width="200" height="100" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#shadow)" />
+  <rect x="520" y="120" width="200" height="6" fill="#f59e0b" rx="3" />
+  <text x="620" y="165" text-anchor="middle" font-size="32" font-weight="bold" fill="#0f172a">11</text>
+  <text x="620" y="195" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">Filas Rechazadas</text>
+
+  <!-- ROW 2 -->
+  <!-- Metric 4 -->
+  <rect x="80" y="250" width="200" height="100" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#shadow)" />
+  <rect x="80" y="250" width="200" height="6" fill="#ef4444" rx="3" />
+  <text x="180" y="295" text-anchor="middle" font-size="32" font-weight="bold" fill="#0f172a">1</text>
+  <text x="180" y="325" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">Archivo Esquema Inválido</text>
+
+  <!-- Metric 5 -->
+  <rect x="300" y="250" width="200" height="100" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#shadow)" />
+  <rect x="300" y="250" width="200" height="6" fill="#8b5cf6" rx="3" />
+  <text x="400" y="295" text-anchor="middle" font-size="32" font-weight="bold" fill="#0f172a">0</text>
+  <text x="400" y="325" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">Ventas Duplicadas</text>
+
+  <!-- Metric 6 -->
+  <rect x="520" y="250" width="200" height="100" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#shadow)" />
+  <rect x="520" y="250" width="200" height="6" fill="#14b8a6" rx="3" />
+  <text x="620" y="295" text-anchor="middle" font-size="32" font-weight="bold" fill="#0f172a">29</text>
+  <text x="620" y="325" text-anchor="middle" font-size="14" font-weight="600" fill="#64748b">Pruebas CI Aprobadas</text>
+
+</svg>

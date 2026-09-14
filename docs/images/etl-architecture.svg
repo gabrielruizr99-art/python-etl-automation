@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="100%" height="100%" style="background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Arrowhead marker -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+    </marker>
+    <!-- Orange Arrowhead marker -->
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f97316" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.05"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#0f172a">ETL Pipeline Architecture</text>
+
+  <!-- Main Pipeline Blocks -->
+  
+  <!-- Incoming CSV -->
+  <rect x="50" y="100" width="200" height="60" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" filter="url(#shadow)" />
+  <rect x="50" y="100" width="8" height="60" fill="#3b82f6" rx="4" />
+  <text x="145" y="135" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">1. CSV Incoming</text>
+
+  <!-- Discovery + SHA256 -->
+  <rect x="50" y="200" width="200" height="60" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" filter="url(#shadow)" />
+  <rect x="50" y="200" width="8" height="60" fill="#2563eb" rx="4" />
+  <text x="145" y="235" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">2. Discovery + SHA-256</text>
+
+  <!-- Validation -->
+  <rect x="50" y="300" width="200" height="60" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" filter="url(#shadow)" />
+  <rect x="50" y="300" width="8" height="60" fill="#1d4ed8" rx="4" />
+  <text x="145" y="325" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">3. Schema &amp; Row</text>
+  <text x="145" y="345" text-anchor="middle" font-size="14" fill="#64748b">Validation</text>
+
+  <!-- Transformation -->
+  <rect x="50" y="400" width="200" height="60" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" filter="url(#shadow)" />
+  <rect x="50" y="400" width="8" height="60" fill="#1e40af" rx="4" />
+  <text x="145" y="425" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">4. Transformation</text>
+  <text x="145" y="445" text-anchor="middle" font-size="14" fill="#64748b">Decimal Calculations</text>
+
+  <!-- PostgreSQL Staging -->
+  <rect x="350" y="400" width="200" height="60" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" filter="url(#shadow)" />
+  <rect x="350" y="400" width="8" height="60" fill="#0f172a" rx="4" />
+  <text x="445" y="435" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">5. PostgreSQL Staging</text>
+
+  <!-- Warehouse -->
+  <rect x="650" y="400" width="200" height="60" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" filter="url(#shadow)" />
+  <rect x="650" y="400" width="8" height="60" fill="#0f172a" rx="4" />
+  <text x="745" y="435" text-anchor="middle" font-size="16" font-weight="600" fill="#1e293b">6. warehouse.sales</text>
+
+
+  <!-- Branch Outputs -->
+
+  <!-- Duplicates -->
+  <rect x="350" y="200" width="180" height="40" rx="6" fill="#fff7ed" stroke="#fed7aa" stroke-width="2" />
+  <text x="440" y="225" text-anchor="middle" font-size="14" font-weight="500" fill="#c2410c">Duplicado → ignorado</text>
+
+  <!-- Rejected Schema -->
+  <rect x="350" y="270" width="180" height="40" rx="6" fill="#fef2f2" stroke="#fecaca" stroke-width="2" />
+  <text x="440" y="295" text-anchor="middle" font-size="14" font-weight="500" fill="#b91c1c">Esquema Inválido</text>
+
+  <!-- Rejected Row -->
+  <rect x="350" y="320" width="180" height="40" rx="6" fill="#fef2f2" stroke="#fecaca" stroke-width="2" />
+  <text x="440" y="345" text-anchor="middle" font-size="14" font-weight="500" fill="#b91c1c">Fila Inválida</text>
+
+  <!-- Storage Outputs -->
+  <rect x="650" y="200" width="200" height="40" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" />
+  <text x="750" y="225" text-anchor="middle" font-size="14" font-weight="600" fill="#334155">data/processed (duplicado)</text>
+
+  <rect x="650" y="270" width="200" height="40" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" />
+  <text x="750" y="295" text-anchor="middle" font-size="14" font-weight="600" fill="#334155">data/rejected</text>
+
+  <rect x="650" y="320" width="200" height="40" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" />
+  <text x="750" y="345" text-anchor="middle" font-size="14" font-weight="600" fill="#334155">etl.rejected_records</text>
+  
+  <rect x="650" y="480" width="200" height="40" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="2" />
+  <text x="750" y="505" text-anchor="middle" font-size="14" font-weight="600" fill="#15803d">data/processed (exitoso)</text>
+
+
+  <!-- Connecting Lines -->
+  <!-- Vertical Flow -->
+  <path d="M 150 160 L 150 190" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 150 260 L 150 290" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 150 360 L 150 390" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+
+  <!-- Horizontal Flow -->
+  <path d="M 250 430 L 340 430" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+  <path d="M 550 430 L 640 430" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+
+  <!-- Flow to Duplicates -->
+  <path d="M 250 220 L 340 220" fill="none" stroke="#f97316" stroke-width="2" marker-end="url(#arrow-orange)" stroke-dasharray="4" />
+  <path d="M 530 220 L 640 220" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+
+  <!-- Flow to Rejected Schema -->
+  <path d="M 250 290 L 340 290" fill="none" stroke="#f97316" stroke-width="2" marker-end="url(#arrow-orange)" stroke-dasharray="4" />
+  <path d="M 530 290 L 640 290" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+
+  <!-- Flow to Rejected Row -->
+  <path d="M 250 340 L 340 340" fill="none" stroke="#f97316" stroke-width="2" marker-end="url(#arrow-orange)" stroke-dasharray="4" />
+  <path d="M 530 340 L 640 340" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" />
+
+  <!-- Flow from successful load to processed directory -->
+  <path d="M 450 460 L 450 500 L 640 500" fill="none" stroke="#15803d" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="4" />
+
+</svg>

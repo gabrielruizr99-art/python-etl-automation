@@ -1,0 +1,39 @@
+--------------- ESTADO DE ARCHIVOS ---------------
+Processed   : 32 archivos
+Failed      : 18 archivos
+Rejected    : 1 archivos
+
+--------------- ÚLTIMAS 10 EJECUCIONES ---------------
+[2026-09-14 18:24:57] COMPLETED  | Duración: 2.32s    | ID: 5ae466f5-97fa-4b57-a69f-cbeb2dc926c7
+[2026-09-14 18:24:55] RUNNING    | Duración: N/A      | ID: ac7d64ac-7802-41f9-b397-804198a447ee
+[2026-09-14 18:24:55] FAILED     | Duración: 0.03s    | ID: 6ce61d2e-1671-4a45-9119-7aa402587786
+[2026-09-14 18:08:17] COMPLETED  | Duración: 3.45s    | ID: 25e44fea-621d-40fc-9bb1-b1e0dcdd99ff
+[2026-09-14 18:06:39] RUNNING    | Duración: N/A      | ID: c90eaa17-b3df-4f30-acf3-d22d2a422d32
+[2026-09-14 18:06:39] FAILED     | Duración: 0.03s    | ID: 8309f195-7547-4d76-9c98-72a1a3d7d4d7
+[2026-09-14 18:05:46] RUNNING    | Duración: N/A      | ID: 334ef817-183d-4a16-b105-1a75cdb7cc3b
+[2026-09-14 18:05:46] FAILED     | Duración: 0.03s    | ID: 79921326-68ea-4999-bd50-5bf8210a2557
+[2026-09-14 18:05:13] RUNNING    | Duración: N/A      | ID: 1f0f84fd-0e8e-4ef0-9672-22780c4fe44c
+[2026-09-14 18:05:13] FAILED     | Duración: 0.03s    | ID: 226e2e42-7a5a-49c9-b4f3-e86d82756c3b
+
+--------------- WAREHOUSE SALES ---------------
+Total de ventas cargadas : 12001
+Última fecha registrada  : 2026-04-30
+
+--------------- ÚLTIMO ARCHIVO PROCESADO ---------------
+Archivo: sales_invalid_rows.csv
+
+--------------- MOTIVOS DE RECHAZO ---------------
+MISSING_REQUIRED_VALUE   : 2 filas
+INVALID_QUANTITY         : 2 filas
+INVALID_FILE_SCHEMA      : 1 filas
+INVALID_PRODUCT          : 1 filas
+INVALID_CHANNEL          : 1 filas
+INVALID_DATE             : 1 filas
+DUPLICATE_SALE_ID        : 1 filas
+INVALID_DISCOUNT         : 1 filas
+INVALID_PAYMENT_METHOD   : 1 filas
+INVALID_UNIT_PRICE       : 1 filas
+
+--------------- ÚLTIMA EJECUCIÓN FALLIDA ---------------
+Fecha de inicio : 2026-09-14 18:24:55
+Run ID          : 6ce61d2e-1671-4a45-9119-7aa402587786
