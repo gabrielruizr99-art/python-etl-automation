@@ -34,4 +34,7 @@ Los datos utilizados son ficticios y son generados automáticamente para asegura
 - Ruff (Linter y formateador)
 
 ## Estado actual
-Contrato de datos diseñado y generador de datos configurado.
+Contrato de datos diseñado, generador de datos configurado y base de datos PostgreSQL (`etl_automation`) implementada localmente con esquemas de trazabilidad (`etl`) y analíticos (`warehouse`).
+
+## Configuración Base de Datos
+Para información detallada sobre la creación segura de credenciales, el esquema PostgreSQL y cómo ejecutar la configuración inicial de la base de datos de manera idempotente, revisa la documentación: [docs/setup.md](docs/setup.md).
