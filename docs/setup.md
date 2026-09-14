@@ -47,9 +47,16 @@ El proceso de descubrimiento está diseñado para ser seguro e idempotente.
 - **Segunda ejecución:** Si no has agregado nuevos archivos a la carpeta, el script los analizará, calculará sus hashes y determinará que todos ya existen, resultando en 0 archivos nuevos y todos duplicados. Esto previene dobles cargas y mantiene la integridad del sistema.
 El hash `SHA-256` se calcula leyendo el archivo por bloques para optimizar memoria, y se detectan modificaciones de archivos en tiempo de ejecución.
 
-## 5. Ejecución de la Validación (Validation)
-Una vez descubiertos los archivos, estos deben ser validados:
+## 5. Ejecución del Pipeline (Discovery, Validation, Load, Archive)
+Una vez generados los archivos, puedes ejecutar el pipeline completo de manera idempotente:
 ```bash
-.venv\Scripts\python.exe scripts\validate_files.py
+.venv\Scripts\python.exe scripts\run_pipeline.py
 ```
-Esta etapa comprueba la integridad del esquema (encabezados correctos) y el contenido de las filas (reglas de negocio como límites en precios y catálogos válidos). Los registros inválidos son separados en `etl.rejected_records` con motivos codificados en `reason_code` sin bloquear la carga útil. Una segunda corrida ignorará los archivos que ya se encuentren en estado distinto a "discovered".
+
+### Comportamiento:
+- **Descubrimiento**: Escanea `data/incoming`, calcula hashes SHA-256 en memoria por bloques, y diferencia archivos nuevos, en-progreso, y re-subidas verdaderas (duplicados).
+- **Validación**: Comprueba la integridad del esquema y el contenido de las filas (límites numéricos, catálogos). Los registros inválidos son separados en `etl.rejected_records` con motivos detallados.
+- **Transformación**: Cálculos financieros estrictos con redondeo `ROUND_HALF_UP`.
+- **Carga (Load)**: Usa una **tabla temporal (`staging_sales`)** y el comando `COPY` para carga masiva y controlada de las filas. Finalmente, un `INSERT ... ON CONFLICT DO NOTHING` deposita las filas seguras en `warehouse.sales`. 
+- **Archivado Transaccional**: Mueve los archivos a `data/processed`, `data/rejected`, o `data/processed/duplicates` y aplica sufijos (`_YYYYMMDDHHMMSS_hash`) en caso de colisión. Si falla el movimiento, la BD hace rollback. Si falla el Commit tras el movimiento, el archivo es restituido.
+- **Idempotencia**: Garantiza total protección. Una segunda ejecución no afectará la base de datos de ninguna forma (0 archivos, 0 inserts).

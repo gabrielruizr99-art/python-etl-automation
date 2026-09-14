@@ -117,6 +117,28 @@ class ETLRepository:
             logger.error("Failed to get discovered files.")
             raise RuntimeError("Database error") from e
 
+    def get_validated_files(self) -> list:
+        """Devuelve los archivos con estado 'validated' para ser cargados."""
+        query = """
+            SELECT file_id, run_id, file_name, file_hash, file_size_bytes 
+            FROM etl.file_registry 
+            WHERE status = 'validated'
+            ORDER BY file_name
+        """
+        try:
+            with psycopg.connect(**self.db_info) as conn, conn.cursor() as cur:
+                cur.execute(query)
+                return [
+                    {
+                        "file_id": row[0], "run_id": row[1], 
+                        "file_name": row[2], "file_hash": row[3], "file_size_bytes": row[4]
+                    } 
+                    for row in cur.fetchall()
+                ]
+        except Exception as e:
+            logger.error("Failed to get validated files.")
+            raise RuntimeError("Database error") from e
+
     def update_file_status(self, file_id: uuid.UUID, status: str, error_message: str = None):
         """Actualiza el estado de un archivo en file_registry."""
         now = datetime.now(timezone.utc)
@@ -189,3 +211,38 @@ class ETLRepository:
         except Exception as e:
             logger.error("Failed to update validation metrics.")
             raise RuntimeError("Database error") from e
+
+    def load_file_to_warehouse(self, conn, rows: list) -> int:
+        """
+        Carga filas transformadas al data warehouse usando una tabla temporal
+        y COPY dentro de la conexión proporcionada. Retorna el número de registros insertados.
+        """
+        if not rows:
+            return 0
+            
+        columns = [
+            "sale_id", "sale_date", "sale_time", "branch_id", "customer_id", 
+            "product_id", "seller_id", "sales_channel", "payment_method", 
+            "quantity", "unit_price", "discount_pct", "gross_amount", 
+            "discount_amount", "net_amount", "source_file", "source_hash"
+        ]
+        
+        with conn.cursor() as cur:
+            # Tabla temporal para la transacción actual
+            cur.execute("CREATE TEMP TABLE staging_sales (LIKE warehouse.sales INCLUDING DEFAULTS) ON COMMIT DROP")
+            
+            with cur.copy(f"COPY staging_sales ({', '.join(columns)}) FROM STDIN") as copy:
+                for row in rows:
+                    copy.write_row([row[col] for col in columns])
+                    
+            # Insertar en tabla final con ON CONFLICT
+            insert_query = f"""
+                INSERT INTO warehouse.sales ({', '.join(columns)})
+                SELECT {', '.join(columns)}
+                FROM staging_sales
+                ON CONFLICT (sale_id) DO NOTHING
+                RETURNING sale_id
+            """
+            cur.execute(insert_query)
+            inserted = cur.fetchall()
+            return len(inserted)

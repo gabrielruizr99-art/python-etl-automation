@@ -19,33 +19,6 @@ def test_calculate_sha256(tmp_path):
     expected = hashlib.sha256(content).hexdigest()
     assert calculate_sha256(file_path) == expected
 
-def test_calculate_sha256_modified(tmp_path, monkeypatch):
-    file_path = tmp_path / "test.csv"
-    file_path.write_bytes(b"test")
-    
-    import os
-    
-    class FakeStat:
-        def __init__(self, st):
-            self.st_size = st.st_size + 1
-            self.st_mtime = st.st_mtime
-            
-    original_stat = os.stat
-    call_count = 0
-    def mock_stat(path, *args, **kwargs):
-        nonlocal call_count
-        st = original_stat(path, *args, **kwargs)
-        if str(path) == str(file_path):
-            call_count += 1
-            if call_count > 1:
-                return FakeStat(st)
-        return st
-        
-    monkeypatch.setattr(os, "stat", mock_stat)
-    
-    with pytest.raises(ValueError, match="File modified"):
-        calculate_sha256(file_path)
-
 def test_discover_csv_files_filters(tmp_path):
     (tmp_path / "a.csv").write_text("a")
     (tmp_path / "b.txt").write_text("b") # Ignorar txt

@@ -32,6 +32,12 @@ Cada fila representa una línea de venta. Las columnas `source_file` y `ingestio
 1. **A nivel de registro:** `sale_id` es la **clave de negocio principal**. Si el ETL encuentra un `sale_id` duplicado en el mismo archivo, en el lote o que ya exista en la base de datos, lo marcará con el código `DUPLICATE_SALE_ID`.
 2. **A nivel de archivo:** El ETL calcula un hash SHA-256 leyendo por bloques.
 
+## Reglas de Carga Transaccional (Fase 6)
+- **Transformación Financiera**: Durante la carga, los montos financieros se calculan con base en `quantity` y `unit_price`, aplicando descuentos. Todo se calcula internamente usando el tipo `Decimal` y la política `ROUND_HALF_UP` a 2 decimales para precisión contable. No se usan números de punto flotante en las operaciones.
+- **Idempotencia en Base de Datos**: La tabla `warehouse.sales` implementa la restricción `ON CONFLICT (sale_id) DO NOTHING`. Cualquier venta con un `sale_id` que ya existe es omitida silenciosamente a nivel motor, garantizando una ingesta libre de duplicados reales.
+- **Manejo de Tabla Temporal (`staging_sales`)**: Cada archivo se carga completo usando la veloz instrucción `COPY` de PostgreSQL hacia una tabla temporal. Una vez llenada, un `INSERT` masivo cruza los datos con la tabla principal. La tabla temporal se desecha automáticamente (`ON COMMIT DROP`).
+- **Trazabilidad**: En la tabla final se agregan las columnas `source_file` y `source_hash` para conocer el origen exacto de cada transacción. La fecha de ingesta (`ingested_at`) es gestionada por PostgreSQL.
+
 ## Estados de Archivo y Tratamiento de Rechazos
 Durante la fase de validación, los archivos descubiertos transitan entre los siguientes estados:
 - **`discovered`**: Recién detectado.
