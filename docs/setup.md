@@ -34,3 +34,15 @@ Este esquema actúa como el "cuarto de máquinas" del flujo de datos, documentan
 ### Esquema `warehouse`
 Este esquema expone la información final limpia y estructurada.
 - `warehouse.sales`: Es la tabla central de hechos analíticos donde reside toda la data validada e ingestada. Cuenta con restricciones (`CHECK`) fuertes e índices estratégicos para garantizar la calidad final de los reportes.
+
+## 4. Ejecución del Descubrimiento de Archivos
+La primera etapa operativa del ETL es descubrir qué archivos CSV nuevos existen en `data/incoming/`. Ejecuta:
+```bash
+.venv\Scripts\python.exe scripts\discover_files.py
+```
+
+### Idempotencia en Acción
+El proceso de descubrimiento está diseñado para ser seguro e idempotente. 
+- **Primera ejecución:** Registra todos los archivos nuevos en la tabla `etl.file_registry` con estado "discovered". Si encuentra algún archivo duplicado (archivos con el mismo contenido exacto y, por lo tanto, el mismo hash SHA-256), lo registrará como duplicado y no lo insertará de nuevo, sin lanzar excepciones gracias al mecanismo `ON CONFLICT DO NOTHING`.
+- **Segunda ejecución:** Si no has agregado nuevos archivos a la carpeta, el script los analizará, calculará sus hashes y determinará que todos ya existen, resultando en 0 archivos nuevos y todos duplicados. Esto previene dobles cargas y mantiene la integridad del sistema.
+El hash `SHA-256` se calcula leyendo el archivo por bloques para optimizar memoria, y se detectan modificaciones de archivos en tiempo de ejecución.

@@ -35,6 +35,14 @@ Los datos utilizados son ficticios y son generados automáticamente para asegura
 
 ## Estado actual
 Contrato de datos diseñado, generador de datos configurado y base de datos PostgreSQL (`etl_automation`) implementada localmente con esquemas de trazabilidad (`etl`) y analíticos (`warehouse`).
+El módulo de **Descubrimiento Idempotente** ya está operativo, garantizando que el ETL registre archivos nuevos y salte archivos previamente procesados (mediante hash SHA-256) sin generar errores.
 
 ## Configuración Base de Datos
 Para información detallada sobre la creación segura de credenciales, el esquema PostgreSQL y cómo ejecutar la configuración inicial de la base de datos de manera idempotente, revisa la documentación: [docs/setup.md](docs/setup.md).
+
+## Fase de Descubrimiento (Discovery)
+El sistema puede inspeccionar el directorio `data/incoming/` para encontrar y registrar nuevos archivos CSV de ventas. Para ejecutar este proceso:
+```bash
+.venv\Scripts\python.exe scripts\discover_files.py
+```
+Esta fase calcula el hash de los archivos por bloques sin saturar la memoria y asegura que no se procese dos veces el mismo archivo, registrando el progreso en `etl.pipeline_runs` y el inventario en `etl.file_registry`.
