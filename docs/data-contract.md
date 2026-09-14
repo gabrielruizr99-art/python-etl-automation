@@ -29,5 +29,16 @@ Cada fila representa una línea de venta. Las columnas `source_file` y `ingestio
 
 ## Claves de Idempotencia y Deduplicación
 
-1. **A nivel de registro:** `sale_id` es la **clave de negocio principal**. Si el ETL encuentra un `sale_id` que ya existe en la base de datos (y pertenece a la misma venta exitosa), se omitirá su inserción para evitar duplicación.
-2. **A nivel de archivo:** El ETL calculará un **hash MD5 o SHA-256** del archivo entrante. Si el hash ya ha sido procesado anteriormente con éxito, se considerará un archivo repetido y se registrará en los logs saltando su procesamiento general.
+1. **A nivel de registro:** `sale_id` es la **clave de negocio principal**. Si el ETL encuentra un `sale_id` duplicado en el mismo archivo, en el lote o que ya exista en la base de datos, lo marcará con el código `DUPLICATE_SALE_ID`.
+2. **A nivel de archivo:** El ETL calcula un hash SHA-256 leyendo por bloques.
+
+## Estados de Archivo y Tratamiento de Rechazos
+Durante la fase de validación, los archivos descubiertos transitan entre los siguientes estados:
+- **`discovered`**: Recién detectado.
+- **`processing`**: En proceso de validación.
+- **`validated`**: Validado (pudiendo tener todas sus filas correctas, o algunas rechazadas).
+- **`rejected`**: Rechazado íntegramente por esquema inválido o archivo vacío sin encabezados.
+- **`failed`**: Error técnico impredecible (aislado de los datos).
+
+### Tratamiento de Registros Rechazados
+Toda fila inválida es desviada a la tabla `etl.rejected_records`. Cada registro produce una sola entrada de rechazo en base de datos conteniendo todos los `rejection_codes` agrupados, manteniendo en formato `JSONB` seguro la información original, garantizando la trazabilidad sin bloquear la carga de datos correctos del lote.

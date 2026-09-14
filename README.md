@@ -46,3 +46,10 @@ El sistema puede inspeccionar el directorio `data/incoming/` para encontrar y re
 .venv\Scripts\python.exe scripts\discover_files.py
 ```
 Esta fase calcula el hash de los archivos por bloques sin saturar la memoria y asegura que no se procese dos veces el mismo archivo, registrando el progreso en `etl.pipeline_runs` y el inventario en `etl.file_registry`.
+
+## Fase de Validación (Validation)
+Los archivos descubiertos pasan por validaciones de esquema (encabezados) y validaciones rigurosas fila por fila basadas en las reglas del negocio (UUIDv4, catálogos, límites de precio y cantidad). Para correr la validación:
+```bash
+.venv\Scripts\python.exe scripts\validate_files.py
+```
+Las filas anómalas son segregadas sin interrumpir las demás. Toda la operación es **idempotente** (una segunda corrida ignorará los archivos ya validados previamente).

@@ -46,3 +46,10 @@ El proceso de descubrimiento está diseñado para ser seguro e idempotente.
 - **Primera ejecución:** Registra todos los archivos nuevos en la tabla `etl.file_registry` con estado "discovered". Si encuentra algún archivo duplicado (archivos con el mismo contenido exacto y, por lo tanto, el mismo hash SHA-256), lo registrará como duplicado y no lo insertará de nuevo, sin lanzar excepciones gracias al mecanismo `ON CONFLICT DO NOTHING`.
 - **Segunda ejecución:** Si no has agregado nuevos archivos a la carpeta, el script los analizará, calculará sus hashes y determinará que todos ya existen, resultando en 0 archivos nuevos y todos duplicados. Esto previene dobles cargas y mantiene la integridad del sistema.
 El hash `SHA-256` se calcula leyendo el archivo por bloques para optimizar memoria, y se detectan modificaciones de archivos en tiempo de ejecución.
+
+## 5. Ejecución de la Validación (Validation)
+Una vez descubiertos los archivos, estos deben ser validados:
+```bash
+.venv\Scripts\python.exe scripts\validate_files.py
+```
+Esta etapa comprueba la integridad del esquema (encabezados correctos) y el contenido de las filas (reglas de negocio como límites en precios y catálogos válidos). Los registros inválidos son separados en `etl.rejected_records` con motivos codificados en `reason_code` sin bloquear la carga útil. Una segunda corrida ignorará los archivos que ya se encuentren en estado distinto a "discovered".

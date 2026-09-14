@@ -93,3 +93,99 @@ class ETLRepository:
         except Exception as e:
             logger.error("Failed to mark pipeline run as failed.")
             raise RuntimeError("Database error during run failure") from e
+
+    def get_discovered_files(self) -> list:
+        """Devuelve los archivos con estado 'discovered' para ser procesados."""
+        query = """
+            SELECT file_id, run_id, file_name, file_hash, file_size_bytes 
+            FROM etl.file_registry 
+            WHERE status = 'discovered'
+            ORDER BY file_name
+        """
+        try:
+            with psycopg.connect(**self.db_info) as conn, conn.cursor() as cur:
+                cur.execute(query)
+                # Retornamos dicts para facilidad
+                return [
+                    {
+                        "file_id": row[0], "run_id": row[1], 
+                        "file_name": row[2], "file_hash": row[3], "file_size_bytes": row[4]
+                    } 
+                    for row in cur.fetchall()
+                ]
+        except Exception as e:
+            logger.error("Failed to get discovered files.")
+            raise RuntimeError("Database error") from e
+
+    def update_file_status(self, file_id: uuid.UUID, status: str, error_message: str = None):
+        """Actualiza el estado de un archivo en file_registry."""
+        now = datetime.now(timezone.utc)
+        query = """
+            UPDATE etl.file_registry 
+            SET status = %s, processed_at = %s, error_message = %s
+            WHERE file_id = %s
+        """
+        try:
+            with psycopg.connect(**self.db_info) as conn, conn.cursor() as cur:
+                cur.execute(query, (status, now, error_message, file_id))
+        except Exception as e:
+            logger.error(f"Failed to update status for file {file_id}.")
+            raise RuntimeError("Database error") from e
+
+    def insert_rejected_records(self, records: list):
+        """
+        Inserta un lote de registros rechazados.
+        records: lista de tuplas (rejection_id, run_id, file_id, row_number, reason_code, reason_detail, raw_data_json)
+        """
+        if not records:
+            return
+            
+        query = """
+            INSERT INTO etl.rejected_records 
+            (rejection_id, run_id, file_id, row_number, reason_code, reason_detail, raw_data, rejected_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        now = datetime.now(timezone.utc)
+        # Añadir rejected_at a cada registro
+        records_with_time = [(*r, now) for r in records]
+        
+        try:
+            with psycopg.connect(**self.db_info) as conn, conn.cursor() as cur:
+                cur.executemany(query, records_with_time)
+        except Exception as e:
+            logger.error("Failed to insert rejected records.")
+            raise RuntimeError("Database error") from e
+
+    def get_existing_sale_ids_in_warehouse(self, sale_ids: set) -> set:
+        """Devuelve los sale_id que ya existen en warehouse.sales."""
+        if not sale_ids:
+            return set()
+            
+        query = "SELECT sale_id FROM warehouse.sales WHERE sale_id = ANY(%s)"
+        try:
+            with psycopg.connect(**self.db_info) as conn, conn.cursor() as cur:
+                cur.execute(query, (list(sale_ids),))
+                return {row[0] for row in cur.fetchall()}
+        except Exception as e:
+            logger.error("Failed to check existing sale_ids.")
+            raise RuntimeError("Database error") from e
+
+    def update_pipeline_run_validation_metrics(self, run_id: uuid.UUID, processed: int, rejected: int, valid_rows: int, rejected_rows: int):
+        """Actualiza las métricas de validación para una ejecución."""
+        query = """
+            UPDATE etl.pipeline_runs
+            SET status = 'completed', 
+                finished_at = %s,
+                files_processed = %s,
+                files_rejected = %s,
+                valid_rows = %s,
+                rejected_rows = %s
+            WHERE run_id = %s
+        """
+        now = datetime.now(timezone.utc)
+        try:
+            with psycopg.connect(**self.db_info) as conn, conn.cursor() as cur:
+                cur.execute(query, (now, processed, rejected, valid_rows, rejected_rows, run_id))
+        except Exception as e:
+            logger.error("Failed to update validation metrics.")
+            raise RuntimeError("Database error") from e

@@ -46,13 +46,16 @@ def main():
         
     # Conectarse a la nueva base y aplicar esquema
     db_info = settings.get_psycopg_connection_info()
-    schema_path = ROOT_DIR / "sql" / "001_initial_schema.sql"
+    sql_dir = ROOT_DIR / "sql"
+    sql_files = sorted(sql_dir.glob("*.sql"))
     
     try:
-        with psycopg.connect(**db_info) as conn, conn.cursor() as cur, schema_path.open("r", encoding="utf-8") as f:
-            schema_sql = f.read()
-            cur.execute(schema_sql)
-        print("Schema applied successfully.")
+        with psycopg.connect(**db_info) as conn, conn.cursor() as cur:
+            for schema_path in sql_files:
+                with schema_path.open("r", encoding="utf-8") as f:
+                    schema_sql = f.read()
+                    cur.execute(schema_sql)
+                print(f"Schema {schema_path.name} applied successfully.")
     except Exception as e:  # noqa: BLE001
         print(f"Error applying schema: {e}")
         sys.exit(1)

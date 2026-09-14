@@ -1,6 +1,5 @@
 import hashlib
 import uuid
-from pathlib import Path
 
 import psycopg
 import pytest
@@ -24,22 +23,26 @@ def test_calculate_sha256_modified(tmp_path, monkeypatch):
     file_path = tmp_path / "test.csv"
     file_path.write_bytes(b"test")
     
-    # Simulamos que el archivo cambia interceptando stat
-    original_stat = Path.stat
+    import os
+    
+    class FakeStat:
+        def __init__(self, st):
+            self.st_size = st.st_size + 1
+            self.st_mtime = st.st_mtime
+            
+    original_stat = os.stat
     call_count = 0
-    def mock_stat(self, *args, **kwargs):
+    def mock_stat(path, *args, **kwargs):
         nonlocal call_count
-        call_count += 1
-        st = original_stat(self, *args, **kwargs)
-        if call_count > 1:
-            # En la segunda llamada (al final del hashing), simulamos otro tamaño
-            class FakeStat:
-                st_size = st.st_size + 1
-                st_mtime = st.st_mtime
-            return FakeStat()
+        st = original_stat(path, *args, **kwargs)
+        if str(path) == str(file_path):
+            call_count += 1
+            if call_count > 1:
+                return FakeStat(st)
         return st
-
-    monkeypatch.setattr(Path, "stat", mock_stat)
+        
+    monkeypatch.setattr(os, "stat", mock_stat)
+    
     with pytest.raises(ValueError, match="File modified"):
         calculate_sha256(file_path)
 
@@ -78,11 +81,12 @@ def test_repository_pipeline_run(repo):
 def test_repository_register_file_idempotency(repo):
     run_id = repo.create_pipeline_run()
     
-    # Archivo falso
+    # Archivo falso con hash único por corrida
+    unique_hash = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
     file = DiscoveredFile(
         file_name="test.csv",
         file_path="/test.csv",
-        file_hash=hashlib.sha256(b"test").hexdigest(),
+        file_hash=unique_hash,
         file_size_bytes=4,
         modified_at="2026-04-01T00:00:00Z"
     )
