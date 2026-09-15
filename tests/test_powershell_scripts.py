@@ -1,8 +1,12 @@
 import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Requires Windows PowerShell")
 def test_powershell_syntax():
     """Prueba que los scripts de PowerShell tienen sintaxis válida."""
     scripts = ["scripts/run_pipeline.ps1", "scripts/register_scheduled_task.ps1"]
@@ -18,6 +22,7 @@ def test_powershell_syntax():
         result = subprocess.run(cmd, capture_output=True, check=False)
         assert result.returncode == 0, f"Error de sintaxis en {script}:\n{result.stderr.decode()}"
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Requires Windows PowerShell")
 def test_register_task_whatif():
     """Prueba el registro de tarea en modo WhatIf sin ConfirmRegistration."""
     script_path = ROOT_DIR / "scripts" / "register_scheduled_task.ps1"
@@ -31,6 +36,7 @@ def test_register_task_whatif():
     assert "MODO SIMULACION" in result.stdout
     assert "Registrando tarea" not in result.stdout
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Requires Windows PowerShell")
 def test_run_pipeline_wrapper_different_cwd(tmp_path):
     """Prueba que el wrapper funciona (o falla correctamente) resolviendo la ruta desde otro cwd."""
     script_path = ROOT_DIR / "scripts" / "run_pipeline.ps1"
